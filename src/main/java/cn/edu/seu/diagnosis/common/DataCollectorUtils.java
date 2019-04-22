@@ -242,7 +242,6 @@ public class DataCollectorUtils {
             sliceItem.add(max);
             result.add(sliceItem);
         }
-
         return result;
     }
 
