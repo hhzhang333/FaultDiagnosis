@@ -78,7 +78,7 @@ public class CommunicationConfig {
     }
 
     public static String generateUrl(String ip, String requestUrl) {
-        return "http://" + ip + ":8080/" + requestUrl;
+        return "http://" + ip + ":8080/FaultDiagnosis_war/" + requestUrl;
     }
 
 }

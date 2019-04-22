@@ -52,10 +52,10 @@ public class DiagnosisController {
     private ScheduledFuture<?> diagnosisDataCollectorTaskMonitor;
 
     @RequestMapping(value = "${startDiagnosisUrl}", method = RequestMethod.POST)
-    @ResponseBody
     public void startDiagnosis(HttpServletRequest request,
                                @RequestBody DiagnosisData data) {
         try {
+            System.out.println("accept diagnosis");
             String requestIp = CommunicationConfig.getIpAddress(request);
             String executeCommand = diagnosisService.startDiagnose(data);
             System.out.println(requestIp + " command: " + executeCommand);
