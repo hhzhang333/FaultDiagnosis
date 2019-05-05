@@ -1,5 +1,6 @@
 package cn.edu.seu.diagnosis.client.service;
 
+import lombok.extern.slf4j.Slf4j;
 import org.buildobjects.process.ProcBuilder;
 import org.buildobjects.process.ProcResult;
 import org.springframework.beans.factory.annotation.Value;
@@ -10,24 +11,31 @@ import org.springframework.stereotype.Service;
  * Created by hhzhang on 2018/12/10.
  */
 @Service
+@Slf4j
 public class CommandExecutorService {
 
     @Value("${sudoPassword}")
     private String sudoPassowrd;
 
 
-    public String execute(String command, long expiredTime) throws Exception {
-        ProcResult procResult = null;
-        if (command.contains("cpulimit")) {
-            int id = this.getMostCPUUsagePID();
-            String realCommand = command.replace("port", id + "");
-            procResult = new ProcBuilder("/bin/bash")
-                    .withArgs("-c", command).withTimeoutMillis(expiredTime).run();
-        } else {
-            procResult = new ProcBuilder("/bin/bash")
-                    .withArgs("-c", command).withTimeoutMillis(expiredTime).run();
+    public String execute(String command, long expiredTime) {
+        try {
+            ProcResult procResult = null;
+            if (command.contains("cpulimit")) {
+                int id = this.getMostCPUUsagePID();
+                String realCommand = command.replace("port", id + "");
+                procResult = new ProcBuilder("/bin/bash")
+                        .withArgs("-c", realCommand).run();
+            } else {
+                procResult = new ProcBuilder("/bin/bash")
+                        .withArgs("-c", command).run();
+            }
+            return procResult.getOutputString();
+        } catch (Exception ex) {
+            log.error("Exception in executeCommand, ex: ", ex);
+            return "error execute command";
         }
-        return procResult.getOutputString();
+
     }
 
     public int getMostCPUUsagePID() throws Exception {

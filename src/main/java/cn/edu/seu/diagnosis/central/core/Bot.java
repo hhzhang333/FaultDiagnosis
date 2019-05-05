@@ -10,9 +10,11 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Created by hhzhang on 2019/1/2.
@@ -60,33 +62,33 @@ public abstract class Bot {
     public abstract void updateStrategy(int state, int action, int newState, double reward);
 
     public String act(DiagnosisData diagnosisData) throws Exception {
-        if (!diagnosisData.isHealth()) {
-            if (commands.containsKey(diagnosisData.getClientIpAddr())) {
-                Road road = new Road();
-                int currentStateId = getStatId(diagnosisData.getCurrentContent());
-                road.setCurrentState(currentStateId);
-                int preStateId = getStatId(diagnosisData.getPreContent());
-                road.setPreState(preStateId);
-                road.setActionId(commandList.getCommandId(diagnosisData.getPreCommand()));
-                road.setReward(0.0);
-                commands.get(diagnosisData.getClientIpAddr()).add(road);
-            } else {
-                Road road = new Road();
-                int currentStateId = getStatId(diagnosisData.getCurrentContent());
-                road.setCurrentState(currentStateId);
-                ArrayList<Road> roads = new ArrayList<>();
-                roads.add(road);
-                commands.put(diagnosisData.getClientIpAddr(), roads);
-            }
-            return selectionAction(diagnosisData);
+        if (commands.containsKey(diagnosisData.getClientIpAddr())) {
+            Road road = new Road();
+            int currentStateId = getStatId(diagnosisData.getCurrentContent());
+            road.setCurrentState(currentStateId);
+            int preStateId = getStatId(diagnosisData.getPreContent());
+            road.setPreState(preStateId);
+            road.setActionId(commandList.getCommandId(diagnosisData.getCurrentCommand()));
+            road.setReward(0.0);
+            commands.get(diagnosisData.getClientIpAddr()).add(road);
         } else {
+            Road road = new Road();
+            int currentStateId = getStatId(diagnosisData.getCurrentContent());
+            road.setCurrentState(currentStateId);
+            ArrayList<Road> roads = new ArrayList<>();
+            roads.add(road);
+            commands.put(diagnosisData.getClientIpAddr(), roads);
+        }
+        if (!diagnosisData.isHealth())
+            return selectionAction(diagnosisData);
+        else {
             List<Road> roads = commands.get(diagnosisData.getClientIpAddr());
             int stateId = roads.get(roads.size() - 1).getCurrentState();
-            int actionId = commandList.getCommandId(diagnosisData.getPreCommand());
+            int actionId = commandList.getCommandId(diagnosisData.getCurrentCommand());
             int healthId = classLabel.size() - 1;
             this.updateStrategy(stateId, actionId, healthId, reward);
             int eveReward = reward / roads.size();
-            for (int i = roads.size(); i >= 1; i--) {
+            for (int i = roads.size() - 1; i > 0; i--) {
                 Road road = roads.get(i);
                 this.updateStrategy(road.getPreState(), road.getActionId(), road.getCurrentState(), eveReward);
             }
