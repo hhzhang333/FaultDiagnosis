@@ -2,7 +2,6 @@ package cn.edu.seu.diagnosis.client.controller;
 
 import cn.edu.seu.diagnosis.client.service.CommandExecutorService;
 import cn.edu.seu.diagnosis.common.DataCollectorService;
-import cn.edu.seu.diagnosis.common.DataCollectorUtils;
 import cn.edu.seu.diagnosis.common.DiagnosisData;
 import cn.edu.seu.diagnosis.config.CommunicationConfig;
 import cn.edu.seu.diagnosis.config.DataCollectorConfig;
@@ -13,9 +12,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
-import weka.knowledgeflow.steps.DataCollector;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -47,8 +44,8 @@ public class DiagnosisClientController {
             System.out.println("accept diagnosis, command: " + commandExecutor);
 
             commandExecutor.execute(data.getCurrentCommand(), 10000);
-            //等待命令生效
-            Thread.sleep(8000);
+//            //等待命令生效
+//            Thread.sleep(5000);
 
             List<Double> doubleList = dataCollectorService.getDiagnosisData();
 
@@ -59,7 +56,6 @@ public class DiagnosisClientController {
                 String monitorUrl = CommunicationConfig.generateUrl(communicationConfig.ip, communicationConfig.monitor + "/" + 1);
                 restTemplate.getForEntity(monitorUrl, Void.class);
             }
-
             data.setCurrentContent(dataCollectorService.listToCSV(doubleList));
 
             data.setHealth(health);

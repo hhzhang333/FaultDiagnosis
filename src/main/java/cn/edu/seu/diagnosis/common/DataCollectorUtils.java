@@ -1,6 +1,7 @@
 package cn.edu.seu.diagnosis.common;
 
 import com.google.gson.Gson;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.scheduling.support.CronTrigger;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import java.util.*;
 /**
  * Created by hhzhang on 2018/12/5.
  */
+@Slf4j
 @Component
 public class DataCollectorUtils {
 
@@ -57,17 +59,29 @@ public class DataCollectorUtils {
     public List<Double> parseProperties(List<String> properties, String content) {
         Map<String, Object> result = new Gson().fromJson(content, Map.class);
         List<Double> doubles = new ArrayList<>();
-        for (String item : properties) {
-            String[] indexes = item.split(">");
-            Map<String, Object> innerResult = (Map<String, Object>) result.get(indexes[0]);
-            if (innerResult == null)
-                continue;
-            Map<String, Object> thireInnerResult = (Map<String, Object>) innerResult.get("dimensions");
-            Map<String, Object> lastResult = (Map<String, Object>) thireInnerResult.get(indexes[1]);
-            Double value = (Double) lastResult.get("value");
-            doubles.add(value);
 
+        if (properties.size() > 10) {
+            for (int i = 0; i < properties.size() / 2; i++)
+                doubles.add(0.0);
+            return doubles;
         }
+
+        try {
+            for (String item : properties) {
+                String[] indexes = item.split(">");
+                Map<String, Object> innerResult = (Map<String, Object>) result.get(indexes[0]);
+                if (innerResult == null)
+                    continue;
+                Map<String, Object> thireInnerResult = (Map<String, Object>) innerResult.get("dimensions");
+                Map<String, Object> lastResult = (Map<String, Object>) thireInnerResult.get(indexes[1]);
+                Double value = (Double) lastResult.get("value");
+                doubles.add(value);
+
+            }
+        } catch (Exception ex) {
+            log.error("Exception in parseProperties, ex: ", ex);
+        }
+
         return doubles;
     }
 

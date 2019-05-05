@@ -19,11 +19,12 @@ public class DiagnosisData {
     private boolean isHealth;
 
     public DiagnosisData newStage() {
-        DiagnosisData diagnosisData = new DiagnosisData();
-        diagnosisData.setClientIpAddr(this.clientIpAddr);
-        diagnosisData.setPreContent(this.currentContent);
-        diagnosisData.setPreCommand(this.currentCommand);
-        return diagnosisData;
+        this.setClientIpAddr(this.clientIpAddr);
+        this.setPreContent(this.currentContent);
+        this.setPreCommand(this.currentCommand);
+        this.setCurrentContent(null);
+        this.setCurrentCommand(null);
+        return this;
     }
 
     @Override
