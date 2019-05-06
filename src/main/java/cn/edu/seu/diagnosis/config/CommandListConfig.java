@@ -1,6 +1,7 @@
 package cn.edu.seu.diagnosis.config;
 
 import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -11,6 +12,7 @@ import java.util.Random;
  * Created by hhzhang on 2018/12/16.
  */
 @Getter
+@Setter
 @Component
 public class CommandListConfig {
 

@@ -19,7 +19,6 @@ public class DiagnosisData {
     private boolean isHealth;
 
     public DiagnosisData newStage() {
-        this.setClientIpAddr(this.clientIpAddr);
         this.setPreContent(this.currentContent);
         this.setPreCommand(this.currentCommand);
         this.setCurrentContent(null);

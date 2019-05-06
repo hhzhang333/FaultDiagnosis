@@ -5,9 +5,12 @@ import cn.edu.seu.diagnosis.central.reinforcement.Progress;
 import cn.edu.seu.diagnosis.central.reinforcement.QLearner;
 import cn.edu.seu.diagnosis.common.DiagnosisData;
 import cn.edu.seu.diagnosis.config.CommandListConfig;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -17,29 +20,34 @@ import java.util.List;
  * Created by hhzhang on 2018/12/16.
  */
 @Service
+@Getter
+@Setter
 public class DiagnosisService {
 
     @Autowired
     private CommandListConfig commandListConfig;
-    HashMap<String, List<Progress>> diagnosis;
 
+    HashMap<String, List<Progress>> diagnosis;
 
     private double alpha = 0.5;
     private double gamma = 0.4;
     private double reward = 100;
     private QLearner qLearner;
 
-    public DiagnosisService() throws IOException {
+    @PostConstruct
+    public void init() throws IOException {
         List<Action> actions = new ArrayList<>();
         int id = 0;
         for (String command : commandListConfig.getCommands()) {
             Action action = new Action();
             action.setActionId(id);
             action.setCommand(command);
+            actions.add(action);
             id++;
         }
 
         qLearner = new QLearner(actions, alpha, gamma);
+        diagnosis = new HashMap<>();
     }
 
     public Action diagnose(DiagnosisData data) {
@@ -51,8 +59,8 @@ public class DiagnosisService {
     private List<Double> extractSamplesFromString(String sample) {
         List<Double> doubleList = new ArrayList<>();
         String[] values = sample.split(",");
-        for (String value : values) {
-            doubleList.add(Double.parseDouble(value));
+        for (int i = 0; i < values.length - 1; i++) {
+            doubleList.add(Double.parseDouble(values[i]));
         }
         return doubleList;
     }
@@ -71,7 +79,7 @@ public class DiagnosisService {
             List<Progress> progresses = new ArrayList<>();
             Progress progress = new Progress();
             progress.setCurrentState(qLearner.getState(this.extractSamplesFromString(diagnosisData.getCurrentContent())));
-            progress.setPreState(qLearner.getState(this.extractSamplesFromString(diagnosisData.getPreCommand())));
+            progress.setPreState(null);
             progresses.add(progress);
             diagnosis.put(diagnosisData.getClientIpAddr(), progresses);
         }

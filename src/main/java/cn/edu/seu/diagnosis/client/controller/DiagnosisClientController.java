@@ -44,7 +44,6 @@ public class DiagnosisClientController {
             System.out.println("accept diagnosis, command: " + commandExecutor);
 
             commandExecutor.execute(data.getCurrentCommand(), 10000);
-//            //等待命令生效
 //            Thread.sleep(5000);
 
             List<Double> doubleList = dataCollectorService.getDiagnosisData();

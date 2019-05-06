@@ -70,7 +70,7 @@ public class DiagnosisController {
                     Void.class
             );
         } catch (Exception ex) {
-            log.error("Exception in startDiagnosis, ex: " + ex);
+            log.error("Exception in startDiagnosis, ex: ", ex);
         }
     }
 

@@ -22,7 +22,6 @@ import weka.classifiers.Classifier;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -89,7 +88,7 @@ public class SensorController {
         try {
             List<String> clients = communicationConfig.clients;
             for (String client : clients) {
-                String monitorUrl = CommunicationConfig.generateUrl(client, communicationConfig.monitor + "/" + range);
+                String monitorUrl = CommunicationConfig.generateUrl("127.0.0.1", communicationConfig.monitor + "/" + range);
                 restTemplate.getForEntity(monitorUrl, Void.class);
             }
 
