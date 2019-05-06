@@ -1,5 +1,6 @@
 package cn.edu.seu.diagnosis.central.controller;
 
+import cn.edu.seu.diagnosis.central.reinforcement.Action;
 import cn.edu.seu.diagnosis.central.service.DiagnosisService;
 import cn.edu.seu.diagnosis.common.DataCollectorService;
 import cn.edu.seu.diagnosis.common.DataCollectorUtils;
@@ -58,7 +59,7 @@ public class DiagnosisController {
         try {
             System.out.println("accept diagnosis");
             String requestIp = CommunicationConfig.getIpAddress(request);
-            String executeCommand = diagnosisService.startDiagnose(data);
+            String executeCommand = diagnosisService.diagnose(data).getCommand();
             System.out.println(requestIp + " command: " + executeCommand);
             data.newStage();
             data.setCurrentCommand(executeCommand);
@@ -82,10 +83,10 @@ public class DiagnosisController {
                 diagnosisService.diagnose(diagnosisData);
                 return;
             }
-            String executeCommand = diagnosisService.diagnose(diagnosisData);
+            Action executeCommand = diagnosisService.diagnose(diagnosisData);
 
             diagnosisData.newStage();
-            diagnosisData.setCurrentCommand(executeCommand);
+            diagnosisData.setCurrentCommand(executeCommand.getCommand());
 
             restTemplate.postForEntity(
                     CommunicationConfig.generateUrl(diagnosisData.getClientIpAddr(), communicationConfig.diagnosisTask),

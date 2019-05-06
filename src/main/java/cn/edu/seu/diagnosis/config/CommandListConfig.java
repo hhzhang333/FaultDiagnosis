@@ -17,6 +17,12 @@ public class CommandListConfig {
     @Value("#{'${commands}'.split(',')}")
     private List<String> commands;
 
+    @Value("#{'${injects}'.split(',')}")
+    private List<String> injectCommands;
+
+    @Value("#{'${initCommand}'.split(',')}")
+    private List<String> initCommand;
+
     public String randomSelectCommand() {
         Random random = new Random();
         int value = random.nextInt();
