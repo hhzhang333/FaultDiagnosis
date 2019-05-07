@@ -3,8 +3,8 @@ package cn.edu.seu.diagnosis.client.controller;
 import cn.edu.seu.diagnosis.client.service.CommandExecutorService;
 import cn.edu.seu.diagnosis.common.DataCollectorService;
 import cn.edu.seu.diagnosis.common.DiagnosisData;
+import cn.edu.seu.diagnosis.config.CommandListConfig;
 import cn.edu.seu.diagnosis.config.CommunicationConfig;
-import cn.edu.seu.diagnosis.config.DataCollectorConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -13,7 +13,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
+import javax.annotation.PostConstruct;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by hhzhang on 2018/12/14.
@@ -25,7 +28,7 @@ public class DiagnosisClientController {
     private DataCollectorService dataCollectorService;
 
     @Autowired
-    private DataCollectorConfig dataCollectorConfig;
+    private CommunicationConfig communicationConfig;
 
     @Autowired
     private CommandExecutorService commandExecutor;
@@ -34,7 +37,9 @@ public class DiagnosisClientController {
     private RestTemplate restTemplate;
 
     @Autowired
-    private CommunicationConfig communicationConfig;
+    private CommandListConfig commandListConfig;
+
+    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @RequestMapping(value = "${diagnosisTask}")
     @ResponseBody
@@ -69,5 +74,33 @@ public class DiagnosisClientController {
         } catch (Exception ex) {
             log.error("Exception in executeCommandAndReportReward, ex: ", ex);
         }
+    }
+
+    @RequestMapping(value = "${commandsRollback}")
+    @ResponseBody
+    public void initEnvironment(@RequestBody String commands) {
+        try {
+            if (executorService.isShutdown())
+                executorService.shutdown();
+            initEnvir();
+            commandExecutor.execute(commands, 100);
+        } catch (Exception ex) {
+            log.error("Exception in initEnvironments, ex: ", ex);
+        }
+    }
+
+    @PostConstruct
+    private void initEnvir() {
+        executorService.execute(executeEnvironmentCommand());
+    }
+
+    private Runnable executeEnvironmentCommand() {
+        return () -> {
+            try {
+                commandExecutor.execute(commandListConfig.getInitCommand().get(0), 1000);
+            } catch (Exception ex) {
+                log.error("Exception in executeEnvironmentCommand, ex: " + ex);
+            }
+        };
     }
 }

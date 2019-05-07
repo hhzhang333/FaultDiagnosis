@@ -28,6 +28,12 @@ public class QLearner {
         this.gamma = gamma;
     }
 
+    public void updateHealth(State start, int action, double r) {
+        double oldQ = start.getQvalue(action);
+        double newValue = (1 - alpha) * oldQ + alpha * r;
+        start.setQvalue(action, newValue);
+    }
+
     public void update(State start, int action, State end, double r) {
         double oldQ = start.getQvalue(action);
         double max = end.getMaxQ();

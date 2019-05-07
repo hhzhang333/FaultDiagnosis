@@ -81,6 +81,13 @@ public class DiagnosisController {
         try {
             if (diagnosisData.isHealth()) {
                 diagnosisService.diagnose(diagnosisData);
+
+                String commands = diagnosisService.commandRollBack();
+                restTemplate.postForEntity(
+                        CommunicationConfig.generateUrl(diagnosisData.getClientIpAddr(), communicationConfig.commandsRollBack),
+                        commands,
+                        Void.class
+                );
                 return;
             }
             Action executeCommand = diagnosisService.diagnose(diagnosisData);
@@ -94,6 +101,7 @@ public class DiagnosisController {
                     Void.class
             );
         } catch (Exception ex) {
+            diagnosisService.clearProgress(diagnosisData);
             log.error("Exception in diagnosisProcess: ex: ", ex);
         }
     }

@@ -88,7 +88,7 @@ public class SensorController {
         try {
             List<String> clients = communicationConfig.clients;
             for (String client : clients) {
-                String monitorUrl = CommunicationConfig.generateUrl("127.0.0.1", communicationConfig.monitor + "/" + range);
+                String monitorUrl = CommunicationConfig.generateUrl(client, communicationConfig.monitor + "/" + range);
                 restTemplate.getForEntity(monitorUrl, Void.class);
             }
 
