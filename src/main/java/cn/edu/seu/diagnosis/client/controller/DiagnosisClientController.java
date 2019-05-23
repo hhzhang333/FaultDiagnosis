@@ -3,8 +3,8 @@ package cn.edu.seu.diagnosis.client.controller;
 import cn.edu.seu.diagnosis.client.service.CommandExecutorService;
 import cn.edu.seu.diagnosis.common.DataCollectorService;
 import cn.edu.seu.diagnosis.common.DiagnosisData;
+import cn.edu.seu.diagnosis.config.CommandListConfig;
 import cn.edu.seu.diagnosis.config.CommunicationConfig;
-import cn.edu.seu.diagnosis.config.DataCollectorConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -25,7 +25,7 @@ public class DiagnosisClientController {
     private DataCollectorService dataCollectorService;
 
     @Autowired
-    private DataCollectorConfig dataCollectorConfig;
+    private CommunicationConfig communicationConfig;
 
     @Autowired
     private CommandExecutorService commandExecutor;
@@ -34,7 +34,8 @@ public class DiagnosisClientController {
     private RestTemplate restTemplate;
 
     @Autowired
-    private CommunicationConfig communicationConfig;
+    private CommandListConfig commandListConfig;
+
 
     @RequestMapping(value = "${diagnosisTask}")
     @ResponseBody
@@ -43,8 +44,7 @@ public class DiagnosisClientController {
 
             System.out.println("accept diagnosis, command: " + commandExecutor);
 
-            commandExecutor.execute(data.getCurrentCommand(), 10000);
-//            //等待命令生效
+            commandExecutor.execute(data.getCurrentCommand(), 1000);
 //            Thread.sleep(5000);
 
             List<Double> doubleList = dataCollectorService.getDiagnosisData();
@@ -71,4 +71,20 @@ public class DiagnosisClientController {
             log.error("Exception in executeCommandAndReportReward, ex: ", ex);
         }
     }
+
+    @RequestMapping(value = "${commandsRollback}")
+    @ResponseBody
+    public void initEnvironment(@RequestBody List<String> commands) {
+        try {
+            for (String command : commands) {
+                if (command.contains("stress-ng")) {
+                    commandExecutor.executeEnvironment(command, 600000);
+                } else
+                    commandExecutor.executeEnvironment(command, 1000);
+            }
+        } catch (Exception ex) {
+            log.error("Exception in initEnvironments, ex: ", ex);
+        }
+    }
+
 }
