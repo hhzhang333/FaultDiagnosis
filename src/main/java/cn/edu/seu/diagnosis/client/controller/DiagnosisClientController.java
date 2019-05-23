@@ -13,10 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
-import javax.annotation.PostConstruct;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 /**
  * Created by hhzhang on 2018/12/14.
@@ -39,7 +36,6 @@ public class DiagnosisClientController {
     @Autowired
     private CommandListConfig commandListConfig;
 
-    private ExecutorService executorService = Executors.newSingleThreadExecutor();
 
     @RequestMapping(value = "${diagnosisTask}")
     @ResponseBody
@@ -48,7 +44,7 @@ public class DiagnosisClientController {
 
             System.out.println("accept diagnosis, command: " + commandExecutor);
 
-            commandExecutor.execute(data.getCurrentCommand(), 10000);
+            commandExecutor.execute(data.getCurrentCommand(), 1000);
 //            Thread.sleep(5000);
 
             List<Double> doubleList = dataCollectorService.getDiagnosisData();
@@ -78,29 +74,17 @@ public class DiagnosisClientController {
 
     @RequestMapping(value = "${commandsRollback}")
     @ResponseBody
-    public void initEnvironment(@RequestBody String commands) {
+    public void initEnvironment(@RequestBody List<String> commands) {
         try {
-            if (executorService.isShutdown())
-                executorService.shutdown();
-            initEnvir();
-            commandExecutor.execute(commands, 100);
+            for (String command : commands) {
+                if (command.contains("stress-ng")) {
+                    commandExecutor.executeEnvironment(command, 600000);
+                } else
+                    commandExecutor.executeEnvironment(command, 1000);
+            }
         } catch (Exception ex) {
             log.error("Exception in initEnvironments, ex: ", ex);
         }
     }
 
-    @PostConstruct
-    private void initEnvir() {
-        executorService.execute(executeEnvironmentCommand());
-    }
-
-    private Runnable executeEnvironmentCommand() {
-        return () -> {
-            try {
-                commandExecutor.execute(commandListConfig.getInitCommand().get(0), 1000);
-            } catch (Exception ex) {
-                log.error("Exception in executeEnvironmentCommand, ex: " + ex);
-            }
-        };
-    }
 }

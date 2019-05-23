@@ -35,7 +35,16 @@ public class CommandExecutorService {
             log.error("Exception in executeCommand, ex: ", ex);
             return "error execute command";
         }
+    }
 
+    public void executeEnvironment(String command, long expiredTime) {
+        try {
+            ProcResult procResult = new ProcBuilder("/bin/bash").withArgs("-c", command)
+                    .withTimeoutMillis(expiredTime).run();
+            System.out.println("init environment");
+        } catch (Exception ex) {
+
+        }
     }
 
     public int getMostCPUUsagePID() throws Exception {

@@ -18,6 +18,7 @@ import org.springframework.web.client.RestTemplate;
 import weka.classifiers.Classifier;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.List;
 import java.util.concurrent.ScheduledFuture;
 
 /**
@@ -82,7 +83,9 @@ public class DiagnosisController {
             if (diagnosisData.isHealth()) {
                 diagnosisService.diagnose(diagnosisData);
 
-                String commands = diagnosisService.commandRollBack();
+                List<String> commands = diagnosisService.commandRollBack();
+                String command = diagnosisService.getInjectCommand();
+                commands.add(command);
                 restTemplate.postForEntity(
                         CommunicationConfig.generateUrl(diagnosisData.getClientIpAddr(), communicationConfig.commandsRollBack),
                         commands,
@@ -178,5 +181,17 @@ public class DiagnosisController {
                 log.error("Exception in monitor, ex: " + ex);
             }
         };
+    }
+
+    @RequestMapping(value = "inject", method = RequestMethod.GET)
+    public void injectorFault() {
+        for (String client : communicationConfig.clients) {
+            List<String> commands = diagnosisService.commandRollBack();
+            restTemplate.postForEntity(
+                    CommunicationConfig.generateUrl(client, communicationConfig.commandsRollBack),
+                    commands,
+                    Void.class
+            );
+        }
     }
 }

@@ -121,12 +121,15 @@ public class DiagnosisService {
         return qLearner.getQTable();
     }
 
-    public String commandRollBack() {
+    public List<String> commandRollBack() {
 
-        Random random = new Random();
-        int injectFaultId = random.nextInt(commandListConfig.getInjectCommands().size());
+        return commandListConfig.getRollbackCommand();
+    }
 
-        return commandListConfig.getInjectCommands().get(injectFaultId);
+    public String getInjectCommand() {
+        Random random = new Random(System.currentTimeMillis());
+        int id = random.nextInt(commandListConfig.getInjectCommands().size());
+        return commandListConfig.getInjectCommands().get(id);
     }
 }
 
