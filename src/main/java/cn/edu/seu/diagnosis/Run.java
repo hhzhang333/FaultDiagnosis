@@ -39,6 +39,7 @@ public class Run extends SpringBootServletInitializer {
     @Bean
     RestTemplate getRestTemplate() {return new RestTemplate();}
 
+
     @RequestMapping({"/", "/index.html"})
     public ModelAndView index() {
         return new ModelAndView("index");
