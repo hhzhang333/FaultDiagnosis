@@ -3,7 +3,6 @@ package cn.edu.seu.diagnosis.client.controller;
 import cn.edu.seu.diagnosis.client.service.CommandExecutorService;
 import cn.edu.seu.diagnosis.common.DataCollectorService;
 import cn.edu.seu.diagnosis.common.DiagnosisData;
-import cn.edu.seu.diagnosis.config.CommandListConfig;
 import cn.edu.seu.diagnosis.config.CommunicationConfig;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +13,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.client.RestTemplate;
 
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * Created by hhzhang on 2018/12/14.
@@ -33,9 +34,7 @@ public class DiagnosisClientController {
     @Autowired
     private RestTemplate restTemplate;
 
-    @Autowired
-    private CommandListConfig commandListConfig;
-
+    private ExecutorService executorService = Executors.newFixedThreadPool(5);
 
     @RequestMapping(value = "${diagnosisTask}")
     @ResponseBody
@@ -77,14 +76,23 @@ public class DiagnosisClientController {
     public void initEnvironment(@RequestBody List<String> commands) {
         try {
             for (String command : commands) {
-                if (command.contains("stress-ng")) {
-                    commandExecutor.executeEnvironment(command, 600000);
-                } else
-                    commandExecutor.executeEnvironment(command, 1000);
+                executeCommandAsync(command);
             }
         } catch (Exception ex) {
             log.error("Exception in initEnvironments, ex: ", ex);
         }
+    }
+
+    public void executeCommandAsync(String command) {
+        executorService.execute(
+                () -> {
+                    if (command.contains("stress-ng")) {
+                        commandExecutor.executeEnvironment(command, 600000);
+                    } else
+                        commandExecutor.executeEnvironment(command, 1000);
+                }
+        );
+
     }
 
 }
