@@ -96,7 +96,7 @@ public class DataCollectorService {
 
     private void startDiagnosisProcess(List<Double> params) {
         String diagnosisUrl = CommunicationConfig.generateUrl(
-                "127.0.0.1",
+                communicationConfig.master,
                 communicationConfig.startDiagnosisProcess
         );
 
@@ -106,8 +106,8 @@ public class DataCollectorService {
         data.setHealth(false);
 
         //开始诊断，暂停监控系统，诊断结束，重新开始监控
-//        String stopUrl = CommunicationConfig.generateUrl(communicationConfig.ip, communicationConfig.stopMonitor);
-        String stopUrl = CommunicationConfig.generateUrl("127.0.0.1", communicationConfig.stopMonitor);
+        String stopUrl = CommunicationConfig.generateUrl(communicationConfig.ip, communicationConfig.stopMonitor);
+//        String stopUrl = CommunicationConfig.generateUrl("127.0.0.1", communicationConfig.stopMonitor);
         System.out.println(stopUrl);
         try {
             ResponseEntity<Void> responseEntity = restTemplate.getForEntity(stopUrl, Void.class);

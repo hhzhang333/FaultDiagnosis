@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 /**
  * Created by hhzhang on 2018/12/16.
@@ -52,8 +53,38 @@ public class DiagnosisService {
 
     public Action diagnose(DiagnosisData data) {
         this.addToProgress(data);
+
+        if (data.isHealth()) {
+            this.updateQTable(diagnosis.get(data.getClientIpAddr()));
+            diagnosis.remove(data.getClientIpAddr());
+        }
+
         List<Double> samples = this.extractSamplesFromString(data.getCurrentContent());
         return qLearner.getAction(samples);
+    }
+
+    private void updateQTable(List<Progress> progresses) {
+        for (int i = progresses.size() - 1; i > 0; i--) {
+            Progress progress = progresses.get(i);
+            if (i == progresses.size() - 1) {
+                qLearner.updateHealth(
+                        progress.getPreState(),
+                        progress.getAction().getActionId(),
+                        progress.getReward()
+                );
+            } else {
+                qLearner.update(
+                        progress.getPreState(),
+                        progress.getAction().getActionId(),
+                        progress.getCurrentState(),
+                        progress.getReward()
+                );
+            }
+        }
+    }
+
+    public void clearProgress(DiagnosisData data) {
+        diagnosis.remove(data.getClientIpAddr());
     }
 
     private List<Double> extractSamplesFromString(String sample) {
@@ -68,13 +99,14 @@ public class DiagnosisService {
     private void addToProgress(DiagnosisData diagnosisData) {
         if (diagnosis.containsKey(diagnosisData.getClientIpAddr())) {
             Progress progress = new Progress();
-            progress.setAction(qLearner.getAction(diagnosisData.getPreCommand()));
+            progress.setAction(qLearner.getAction(diagnosisData.getCurrentCommand()));
             progress.setCurrentState(qLearner.getState(this.extractSamplesFromString(diagnosisData.getCurrentContent())));
-            progress.setPreState(qLearner.getState(this.extractSamplesFromString(diagnosisData.getPreCommand())));
+            progress.setPreState(qLearner.getState(this.extractSamplesFromString(diagnosisData.getPreContent())));
             if (diagnosisData.isHealth())
                 progress.setReward(reward);
             else
                 progress.setReward(0.0);
+            diagnosis.get(diagnosisData.getClientIpAddr()).add(progress);
         } else {
             List<Progress> progresses = new ArrayList<>();
             Progress progress = new Progress();
@@ -89,17 +121,15 @@ public class DiagnosisService {
         return qLearner.getQTable();
     }
 
-//    public List<String> commandRollBack(String ip) {
-//        List<String> commands = new ArrayList<>();
-//        Map<String, List<Road>> roadMap =  qBot.getCommands();
-//        if (roadMap.containsKey(ip)) {
-//            List<Road> roads = roadMap.get(ip);
-//            for (Road road: roads) {
-//                commands.add(String.valueOf(road.getActionId()));
-//            }
-//            return commands;
-//        }
-//        return null;
-//    }
+    public List<String> commandRollBack() {
+
+        return commandListConfig.getRollbackCommand();
+    }
+
+    public String getInjectCommand() {
+        Random random = new Random(System.currentTimeMillis());
+        int id = random.nextInt(commandListConfig.getInjectCommands().size());
+        return commandListConfig.getInjectCommands().get(id);
+    }
 }
 

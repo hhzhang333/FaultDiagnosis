@@ -25,6 +25,9 @@ public class CommandListConfig {
     @Value("#{'${initCommand}'.split(',')}")
     private List<String> initCommand;
 
+    @Value("#{'${rollbackCommand}'.split(',')}")
+    private List<String> rollbackCommand;
+
     public String randomSelectCommand() {
         Random random = new Random();
         int value = random.nextInt();

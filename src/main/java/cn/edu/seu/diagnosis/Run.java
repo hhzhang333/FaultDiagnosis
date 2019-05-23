@@ -30,7 +30,7 @@ public class Run extends SpringBootServletInitializer {
     @Bean
     TaskScheduler threadPoolTaskScheduler() {
         ThreadPoolTaskScheduler threadPoolTaskScheduler = new ThreadPoolTaskScheduler();
-        threadPoolTaskScheduler.setPoolSize(10);
+        threadPoolTaskScheduler.setPoolSize(5);
         threadPoolTaskScheduler.setThreadNamePrefix("scheduler-task-thread-");
         threadPoolTaskScheduler.initialize();
         return threadPoolTaskScheduler;
