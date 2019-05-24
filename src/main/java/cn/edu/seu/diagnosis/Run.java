@@ -6,7 +6,9 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.task.TaskExecutor;
 import org.springframework.scheduling.TaskScheduler;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +36,16 @@ public class Run extends SpringBootServletInitializer {
         threadPoolTaskScheduler.setThreadNamePrefix("scheduler-task-thread-");
         threadPoolTaskScheduler.initialize();
         return threadPoolTaskScheduler;
+    }
+
+    @Bean(name = "commandProcessor")
+    TaskExecutor commandExecutor() {
+        ThreadPoolTaskExecutor executor = new ThreadPoolTaskExecutor();
+        executor.setThreadNamePrefix("async-");
+        executor.setCorePoolSize(5);
+        executor.setMaxPoolSize(6);
+        executor.setQueueCapacity(20);
+        return executor;
     }
 
     @Bean
